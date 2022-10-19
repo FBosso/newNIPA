@@ -90,7 +90,7 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
     lista = []
     for year in years:
         for month in months:
-            lista.append(xr.open_dataset(f'{data_path}/{year}-{month}_SST.nc').mean(dim='time'))
+            lista.append(xr.open_dataset(f'{data_path}/{year}-{month}_SST.nc', engine='netcdf4').mean(dim='time'))
     tot = xr.concat(lista, dim='time')
     
     print(tot.sst.values.shape)
