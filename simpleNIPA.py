@@ -207,6 +207,7 @@ class NIPAphase(object):
             rawSSTdata = weightsst(self.sst).data
             # take only the SST values considering the correlation mask created before
             rawdata = rawSSTdata[:, sstidx]
+            np.savetxt('/Users/francesco/Desktop/dataN.csv',rawdata)
             # compute the covariance matrix
             cvr = np.cov(rawdata.T)
             # compute eigenvalues and eigenvectors

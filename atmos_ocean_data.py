@@ -95,6 +95,8 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
     
     print(tot.sst.values.shape)
     
+    np.savetxt('/Users/francesco/Desktop/totN.csv',tot.sst.values[0])
+    
     x = tot.sst.values
     dataset = tot
     #convert Kelvin into Celsius
