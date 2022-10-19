@@ -207,7 +207,6 @@ class NIPAphase(object):
             rawSSTdata = weightsst(self.sst).data
             # take only the SST values considering the correlation mask created before
             rawdata = rawSSTdata[:, sstidx]
-            np.savetxt('/Users/francesco/Desktop/dataN.csv',rawdata)
             # compute the covariance matrix
             cvr = np.cov(rawdata.T)
             # compute eigenvalues and eigenvectors
@@ -215,7 +214,6 @@ class NIPAphase(object):
             # sort the eigenvalues from the smallest (0) to the largest (-1) and then 
             # flip the order to obtain them from the largest to the smalles ([::-1] does exactly this)
             eigvalsort = np.argsort(eigval)[::-1]
-
             eigval = eigval[eigvalsort]
             # transformatipn of eigval in real number
             eigval = np.real(eigval)
