@@ -85,18 +85,22 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
     
     print('Start loading...')
     
+    var = data_path.split('/')[-1]
     years = [i for i in range(int(DLargs['startyr'])+1,int(DLargs['endyr'])+2)]
     months = ['01','02','03','04','05','06','07','08','09','10','11','12']
     lista = []
     for year in years:
         for month in months:
-            lista.append(xr.open_dataset(f'{data_path}/{year}-{month}_SST.nc', engine='netcdf4').mean(dim='time'))
+            lista.append(xr.open_dataset(f'{data_path}/{year}-{month}_{var}.nc', engine='netcdf4').mean(dim='time'))
     tot = xr.concat(lista, dim='time')
-    
-    x = tot.sst.values
+    if var == 'SST':
+        x = tot.sst.values
+    elif (var == 'Z200') or (var == 'Z500') or (var == 'Z850'):
+        x = tot.z.values
     dataset = tot
-    #convert Kelvin into Celsius
-    grid = x-273.15
+    #convert Kelvin into Celsius for SST
+    #grid = x-273.15
+    grid = x
     t = dataset.time.values
     
     sstlat = BaseType(data = dataset.lat.values)
