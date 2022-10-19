@@ -1,7 +1,5 @@
 # Readaptation of NIPA module
 
-<hr>
-
 ## Windows Env Setup
 
 ```bash
