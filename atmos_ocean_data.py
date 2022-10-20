@@ -37,7 +37,9 @@ def load_clim_file(fp, debug = False):
     description = f.readline()
     years = f.readline()
     startyr, endyr = years[:4], years[5:9]
-    print( description)
+    print('\n---------------------------------')
+    print(f'Condisered Data: {description}')
+    print('---------------------------------')
 
     #First load extended index
     data = np.loadtxt(fp, skiprows = 2)
@@ -83,7 +85,7 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
 
     # ------------------------------------------------------------------------
     
-    print('Start loading...')
+    print('Start loading data...')
     
     var = data_path.split('/')[-1]
     years = [i for i in range(int(DLargs['startyr'])+1,int(DLargs['endyr'])+2)]
@@ -106,7 +108,7 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
     sstlat = BaseType(data = dataset.lat.values)
     sstlon = BaseType(data = dataset.lon.values)
 
-    print('Loading finished')
+    print('Loading done ✅\n')
     
     # ------------------------------------------------------------------------
 
@@ -151,60 +153,97 @@ def create_phase_index2(**kwargs):
     p3 = deepcopy(p)
     p4 = deepcopy(p)
     p5 = deepcopy(p)
+    p6 = deepcopy(p)
+    p7 = deepcopy(p)
+    p8 = deepcopy(p)
     phaseind = {}
     if nphase == 1:
         p[idx[:]] = True
         phaseind['allyears'] = p
-    if nphase == 2:
+    elif nphase == 2:
         x = nyrs / nphase
         p1[idx[:int(x)]] = True; phaseind['neg'] = p1
         p2[idx[int(x):]] = True; phaseind['pos'] = p2
-    if nphase == 3:
+    elif nphase == 3:
         if phases_even:
-            x = nyrs / nphase
-            x2 = nyrs - x
+            x = int(nyrs / nphase)
+            x2 = int(nyrs - x)
         else:
-            x = nphase / 4
+            x = int(nphase / 4)
             x2 = nyrs - x
         p1[idx[:x]] = True; phaseind['neg'] = p1
         p2[idx[x:x2]] = True; phaseind['neutral'] = p2
         p3[idx[x2:]] = True; phaseind['pos'] = p3
 
-    if nphase == 4:
+    elif nphase == 4:
         if phases_even:
-            x = nyrs / nphase
-            x3 = nyrs - x
-            xr = (x3 - x) / 2
-            x2 = x+xr
+            x = int(nyrs / nphase)
+            x3 = int(nyrs - x)
+            xr = int((x3 - x) / 2)
+            x2 = int(x+xr)
         else:
             half = nyrs / 2
             x = int(round(half*0.34))
-            x3 = nyrs - x
-            xr = (x3 - x) / 2
-            x2 = x + xr
+            x3 = int(nyrs - x)
+            xr = int((x3 - x) / 2)
+            x2 = int(x + xr)
         p1[idx[:x]] = True; phaseind['neg'] = p1
         p2[idx[x:x2]] = True; phaseind['neutneg'] = p2
         p3[idx[x2:x3]] = True; phaseind['netpos'] = p3
         p4[idx[x3:]] = True; phaseind['pos'] = p4
-    if nphase == 5:
+    elif nphase == 5:
         if phases_even:
-            x = nyrs / nphase
-            x4 = nyrs - x
-            xr = (x4 - x) / 3
-            x2 = x+xr
-            x3 = x4-xr
+            x = int(nyrs / nphase)
+            x4 = int(nyrs - x)
+            xr = int((x4 - x) / 3)
+            x2 = int(x+xr)
+            x3 = int(x4-xr)
         else:
             half = nyrs / 2
             x = int(round(half*0.3))
-            x4 = nyrs - x
-            xr = (x4 - x) / 3
-            x2 = x+xr
-            x3 = x4-xr
+            x4 = int(nyrs - x)
+            xr = int((x4 - x) / 3)
+            x2 = int(x+xr)
+            x3 = int(x4-xr)
         p1[idx[:x]] = True; phaseind['neg'] = p1
         p2[idx[x:x2]] = True; phaseind['neutneg'] = p2
         p3[idx[x2:x3]] = True; phaseind['neutral'] = p3
         p4[idx[x3:x4]] = True; phaseind['neutpos'] = p4
         p5[idx[x4:]] = True; phaseind['pos'] = p5
+    elif nphase == 8:
+        if phases_even:
+            x = int(nyrs / nphase)
+            x7 = int(nyrs - x)
+            xr = int((x7 - x) / 6)
+            x2 = int(x+xr)
+            x6 = int(x7-xr)
+            x5 = int(x6-xr)
+            x4 = int(x5-xr)
+            x3 = int(x4-xr)
+        else:
+            half = nyrs / 2
+            x = int(round(half*0.3))
+            x7 = int(nyrs - x)
+            xr = int((x7 - x) / 6)
+            x2 = int(x+xr)
+            x6 = int(x7-xr)
+            x5 = int(x6-xr)
+            x4 = int(x5-xr)
+            x3 = int(x4-xr)
+
+            
+            
+            x2 = int(x+xr)
+            x3 = int(x4-xr)
+        p1[idx[:x]] = True; phaseind['1'] = p1
+        p2[idx[x:x2]] = True; phaseind['2'] = p2
+        p3[idx[x2:x3]] = True; phaseind['3'] = p3
+        p4[idx[x3:x4]] = True; phaseind['4'] = p4
+        p5[idx[x4:x5]] = True; phaseind['5'] = p5
+        p6[idx[x5:x6]] = True; phaseind['6'] = p6
+        p7[idx[x6:x7]] = True; phaseind['7'] = p7
+        p8[idx[x7:]] = True; phaseind['8'] = p8
+    
     # if nphase == 6:
     return index_avg, phaseind
 
