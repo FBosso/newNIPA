@@ -17,7 +17,7 @@ def get_data(kwgroups, data_path):
 def create_kwgroups(debug = False, climdata_startyr = 1979, n_yrs = 43, \
 	climdata_months = [1,2,3], n_mon_sst = 3, sst_lag = 3, n_mon_slp = 3, \
 	slp_lag = 3, n_mon_index = 3, index_lag = 3, n_phases = 2, phases_even = True, \
-	index_fp = 'mei.txt', climdata_fp = 'APGD_prcp.txt'):
+	index_fp = 'mei.txt', climdata_fp = 'APGD_prcp.txt', var = 'SST'):
 	print(climdata_months)
 	"""
 	This function takes information about the seasons, years, and type of divisional
@@ -140,10 +140,10 @@ def create_kwgroups(debug = False, climdata_startyr = 1979, n_yrs = 43, \
 		i2m = int_to_month()
 		print('Precip starts in %s-%d, ends in %s-%d' % \
 			(i2m[climdata_months[0]], climdata_startyr, i2m[climdata_months[-1]], climdata_endyr))
-		print('SST starts in %s-%d, ends in %s-%d' % \
+		print(f'{var} starts in %s-%d, ends in %s-%d' % \
 			(i2m[sst_months[0]], sst_startyr, i2m[sst_months[-1]], sst_endyr))
-		print('SLP starts in %s-%d, ends in %s-%d' % \
-			(i2m[slp_months[0]], slp_startyr, i2m[slp_months[-1]], slp_endyr))
+		#print('SLP starts in %s-%d, ends in %s-%d' % \
+			#(i2m[slp_months[0]], slp_startyr, i2m[slp_months[-1]], slp_endyr))
 		print('INDEX starts in %s-%d, ends in %s-%d' % \
 			(i2m[index_months[0]], index_startyr, i2m[index_months[-1]], index_endyr))
 
