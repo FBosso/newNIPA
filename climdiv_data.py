@@ -14,7 +14,7 @@ def get_data(kwgroups, data_path):
 	return clim_data, sst, index, phaseind
 
 
-def create_kwgroups(debug = False, climdata_startyr = 1871, n_yrs = 145, \
+def create_kwgroups(debug = False, climdata_startyr = 1979, n_yrs = 43, \
 	climdata_months = [1,2,3], n_mon_sst = 3, sst_lag = 3, n_mon_slp = 3, \
 	slp_lag = 3, n_mon_index = 3, index_lag = 3, n_phases = 2, phases_even = True, \
 	index_fp = 'mei.txt', climdata_fp = 'APGD_prcp.txt'):
@@ -22,7 +22,7 @@ def create_kwgroups(debug = False, climdata_startyr = 1871, n_yrs = 145, \
 	"""
 	This function takes information about the seasons, years, and type of divisional
 	data to look at, and creates appropriate kwgroups (parameters) to be input into
-	data loading and openDap modules.
+	data loading.
 	"""
     
 	#_Check a few things

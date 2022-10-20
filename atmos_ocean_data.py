@@ -38,7 +38,7 @@ def load_clim_file(fp, debug = False):
     years = f.readline()
     startyr, endyr = years[:4], years[5:9]
     print('\n---------------------------------')
-    print(f'Condisered Data: {description}')
+    print(f'\nCondisered Data: {description}')
     print('---------------------------------')
 
     #First load extended index
@@ -85,10 +85,10 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
 
     # ------------------------------------------------------------------------
     
-    print('Start loading data...')
+    print('\n\nStart loading data...')
     
     var = data_path.split('/')[-1]
-    years = [i for i in range(int(DLargs['startyr'])+1,int(DLargs['endyr'])+2)]
+    years = [i for i in range(int(DLargs['startyr']),int(DLargs['endyr'])+1)]
     months = ['01','02','03','04','05','06','07','08','09','10','11','12']
     lista = []
     for year in years:
@@ -210,6 +210,8 @@ def create_phase_index2(**kwargs):
         p3[idx[x2:x3]] = True; phaseind['neutral'] = p3
         p4[idx[x3:x4]] = True; phaseind['neutpos'] = p4
         p5[idx[x4:]] = True; phaseind['pos'] = p5
+        
+    # +++++++++++++++ EXPERIMENTAL +++++++++++++++
     elif nphase == 8:
         if phases_even:
             x = int(nyrs / nphase)
@@ -243,7 +245,7 @@ def create_phase_index2(**kwargs):
         p6[idx[x5:x6]] = True; phaseind['6'] = p6
         p7[idx[x6:x7]] = True; phaseind['7'] = p7
         p8[idx[x7:]] = True; phaseind['8'] = p8
-    
+    # +++++++++++++++ EXPERIMENTAL +++++++++++++++
     # if nphase == 6:
     return index_avg, phaseind
 
