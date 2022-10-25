@@ -112,7 +112,7 @@ class NIPAphase(object):
         dat = clim_data.copy()
 
 
-        for boot in xrange(ntim):
+        for boot in range(ntim):
 
             ###SHUFFLE THE YEARS AND CREATE THE BOOT DATA###
             idx = np.random.randint(0, len(dat) - 1, len(dat))
@@ -168,7 +168,7 @@ class NIPAphase(object):
 
         return
 
-    def crossvalpcr(self, xval = True, debug = False):
+    def crossvalpcr(self, n_comp, xval = True, debug = False):
         #Must set phase with bootcorr, and then use crossvalpcr, as it just uses the corr_grid attribute
         import numpy as np
         from numpy import array
@@ -208,6 +208,10 @@ class NIPAphase(object):
             # take only the SST values considering the correlation mask created before
             rawdata = rawSSTdata[:, sstidx]
             # compute the covariance matrix
+            ''' se metto qua il .T considero gli anni come samples e i pixel 
+            come features ... ha senso questo? in teoria i valori di SST 
+            dentro al pixel (quindi il pixel stesso) sono i miei samples. 
+            O no?'''
             cvr = np.cov(rawdata.T)
             # compute eigenvalues and eigenvectors
             eigval, eigvec = np.linalg.eig(cvr)
@@ -218,7 +222,7 @@ class NIPAphase(object):
             # transformatipn of eigval in real number
             eigval = np.real(eigval)
             # definition of the number of principal components to consider
-            ncomp = 1
+            ncomp = n_comp
             #######
             eigvec = eigvec[:,eigval.argsort()[::-1]]
             #######
