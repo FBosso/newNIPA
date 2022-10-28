@@ -18,7 +18,7 @@ def load_climdata(**kwargs):
     idx_start = where((data.index.year == startyr) & (data.index.month == startmon))
     idx = []
     #[idx.extend(arange(len(kwargs['months'])) + idx_start + 12*n) for n in range(kwargs['n_year'])]
-    num = kwargs['endyr']-kwargs['startyr']+1 ###### 40????!!!! (3,3)
+    num = kwargs['endyr']-kwargs['startyr']+1
     [idx.extend(arange(len(kwargs['months'])) + idx_start + 12*n) for n in range(num)]
     climdata = zeros(num)
     for year, mons in enumerate(idx):

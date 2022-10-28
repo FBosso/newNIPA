@@ -168,7 +168,7 @@ class NIPAphase(object):
 
         return
 
-    def crossvalpcr(self, n_comp, xval = True, debug = False):
+    def crossvalpcr(self, var, phase, n_comp, xval = True, debug = False):
         #Must set phase with bootcorr, and then use crossvalpcr, as it just uses the corr_grid attribute
         import numpy as np
         from numpy import array
@@ -176,6 +176,8 @@ class NIPAphase(object):
         from scipy.stats import linregress
         from matplotlib import pyplot as plt
         from utils import weightsst
+        from sklearn import linear_model
+        from sklearn.feature_selection import r_regression
         predictand = self.clim_data
         
         if self.corr_grid.mask.sum() >= len(self.sst.lat) * len(self.sst.lon) - 4:
@@ -206,12 +208,19 @@ class NIPAphase(object):
             # weight the SST values with the cosine of their latitude
             rawSSTdata = weightsst(self.sst).data
             # take only the SST values considering the correlation mask created before
-            rawdata = rawSSTdata[:, sstidx]
+            rawdata = self.sst.data[:, sstidx]
+            if var == 'Z500':
+                #finding geopotential height from geopotential by dividing for 
+                #gravity acceleration --> (m^2 / s^2) / (m / s^2)
+                rawdata = rawdata/9.80665
+            elif var == 'MSLP':
+                #converting MSLP from Pa to hPa (because of coherence with 
+                #geopotential that is in hPa)
+                rawdata = rawdata/100
+            #subtract mean column by column to center the data for the PCA
+            for i in range(rawdata.shape[1]):
+                rawdata[:,i] = rawdata[:,i] - rawdata[:,i].mean()
             # compute the covariance matrix
-            ''' se metto qua il .T considero gli anni come samples e i pixel 
-            come features ... ha senso questo? in teoria i valori di SST 
-            dentro al pixel (quindi il pixel stesso) sono i miei samples. 
-            O no?'''
             cvr = np.cov(rawdata.T)
             # compute eigenvalues and eigenvectors
             eigval, eigvec = np.linalg.eig(cvr)
@@ -226,17 +235,48 @@ class NIPAphase(object):
             #######
             eigvec = eigvec[:,eigval.argsort()[::-1]]
             #######
+            '''
+            #################################################################
+            ########### Trend of cumulative explained variance ##############
+            x = eigval.argsort()[::-1]
+            y = [eigval[:i].sum()/eigval.sum() for i,val in enumerate(eigval)]
+            plt.plot(x[:10],y[:10])
+            plt.show()
+            ################################################################
+            '''
             # selection of the eigvec related to the largest eigval 
             eof_1 = eigvec[:,:ncomp] #_fv stands for Feature Vector, in this case EOF-1
             # conversion of eigvec in real umber
             eof_1 = np.real(eof_1)
             # dot product between original matrix (nxm) and the eigenvector matrix (mxk) to obtain the PC matrix (nxk)
             pc_1 = eof_1.T.dot(rawdata.T).squeeze()
-            slope, intercept, r, p, err = linregress(pc_1, predictand)
-            yhat = slope * pc_1 + intercept
+            if n_comp == 1:
+                slope, intercept, r, p, err = linregress(pc_1, predictand)
+                yhat = slope * pc_1 + intercept
+            elif n_comp == 2:
+                reg = linear_model.LinearRegression()
+                reg.fit(pc_1.T, predictand)
+                slope = reg.coef_
+                intercept = reg.intercept_
+                r = r_regression(pc_1.T, predictand)
+                yhat = slope[0]*pc_1[0] + slope[1]*pc_1[1] + intercept
             self.pc1 = pc_1
             self.correlation = r
             self.hindcast = yhat
+            # create boolean vector representing the phase in the dataset (0 neg 1 pos)
+            label_n = [1 for i in range(len(pc_1))]
+            label_p = [2 for i in range(len(pc_1))]
+            if phase == 'neg':
+                label = np.array(label_n)
+            elif phase == 'pos':
+                label = np.array(label_p)
+            ###
+            if n_comp == 1:
+                data = pd.DataFrame([pc_1,predictand,label]).T
+                data.columns = ['pc1','target','phase_label']
+                # coverting label column from float to integer (we want 0 and 1 not 0.0 and 1.0)
+                data['phase_label'] = pd.to_numeric(data['phase_label'], downcast='integer')
+                self.dataset = data
             return
 
         for i in idx:
