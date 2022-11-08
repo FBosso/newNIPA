@@ -128,14 +128,9 @@ def sig_test(r, n, twotailed = True):
 
 
 def weightsst(sst):
-    # SST needs to be downloaded using the openDAPsst function
 	from numpy import cos, radians
 	weights = cos(radians(sst.lat))
 	for i, weight in enumerate(weights):
 		sst.data[:,i,:] *= weight
-        # se vogliamo il dataset SST meno la media dobbiamo sommare i valori 
-        # ottenuti dalla moltiplicazione della SST con i relativi pesi (in modo 
-        # da ottenere il valore della media pesata ... è solo necessaria la 
-        # somma in quanto i pesi sommano già ad 1, quindi non serve dividere)
 	return sst
 

@@ -122,6 +122,8 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
     for month in kwargs['months']:
         words.append(i2m[month])
     
+    # this section allows for intra annual data loading (it may be 
+    # necessary to load data of consecutive months belonging to different years)
     if len(words) == 2 and (DLargs['endmon'] == 'Jan'):
         years = [i for i in range(int(DLargs['startyr']),int(DLargs['endyr']))]
     elif len(words) == 3 and ((DLargs['endmon'] == 'Jan') or (DLargs['endmon'] == 'Feb')):
@@ -150,7 +152,10 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
     for year in years:
         files_tl = [] #tl = to load
         for i,file in enumerate(files):
+            # as final condition of this if we have a static element (months[0] )
+            # since the offset to load the other month is taken inside this if
             if (file.split('-')[0] == str(year)) and (file.split('-')[1].split('_')[0] == str(months[0])):
+                # load the data considering as offset the len of the month to be considered
                 files_tl = files[i:i+len(months)]
                 break
         avg_items = []

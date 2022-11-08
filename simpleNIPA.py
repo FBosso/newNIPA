@@ -34,6 +34,7 @@ class NIPAphase(object):
         self.sst = seasonal_var(sst.data[phaseind], sst.lat, sst.lon)
         self.mei = mei[phaseind]
         self.flags = {}
+        self.valid = None
 
         """
         sst is a named tuple
@@ -85,20 +86,65 @@ class NIPAphase(object):
         n_yrs = len(clim_data)
 
         p_value = sig_test(corr_grid, n_yrs)
-
+        
+        '''
+        this mask will take from the correlation map only the pixels that:
+            - have a correlation > 0.6 and lower than < -0.6
+            - have a p_value  < than 0.05
+            
+        NOTE: the operation are the opposite with respect to the ones described 
+        in the above comment because the mask must have True values for the pixels
+        to be masked (not cosidered) and False values for the pixels not to be 
+        masked (considered)
+        '''
+        #Prepare significance level mask
+        significance_mask =  (~(p_value < corrlevel))
         #Mask insignificant gridpoints
-        corr_grid = ma.masked_array(corr_grid, ~(p_value < corrlevel))
+        corr_grid = ma.masked_array(corr_grid, significance_mask)
         #Mask land
         corr_grid = ma.masked_array(corr_grid, isnan(corr_grid))
+        #Prepare correlation mask
+        min_corr = 0.6
+        corr_mask = (corr_grid >-min_corr) & (corr_grid < min_corr)
+        #Mask not highly correlated gridpoints
+        corr_grid = ma.masked_array(corr_grid, corr_mask)
         #Mask northern/southern ocean
         corr_grid.mask[self.sst.lat > 60] = True
         corr_grid.mask[self.sst.lat < -30] = True
         nlat = len(self.sst.lat)
         nlon = len(self.sst.lon)
+        #Count the number of visualized pixels
+        count = 0
+        for row in corr_grid.mask:
+            for item in row:
+                if item == False:
+                    count += 1
+                    
+        #Check area with convolutions
+        import tensorflow as tf
+        # boolean map to be checked
+        x_in = (~corr_grid.mask).astype(int).reshape(1,121,240,1)
+        x = tf.constant(x_in, dtype=tf.float32)
+        # convolution kernel definition
+        l = 3
+        kernel_in = np.ones((l,l,1,1)) # [filter_height, filter_width, in_channels, out_channels]
+        kernel = tf.constant(kernel_in, dtype=tf.float32)
+        # execution of the convolutions
+        result = tf.nn.conv2d(x, kernel, strides=[1, l, l, 1], padding='VALID').numpy()
+        
+        # check
+        
+        if (l**2 not in result):
+            self.valid = False
+        elif (l**2 in result):
+            self.valid = True
 
         if quick:
             self.corr_grid = corr_grid
             self.n_pre_grid = nlat * nlon - corr_grid.mask.sum()
+            self.count = count
+            self.min_corr = min_corr
+            
             if self.n_pre_grid == 0:
                 self.flags['noSST'] = True
             else:
