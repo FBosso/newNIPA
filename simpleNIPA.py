@@ -214,7 +214,7 @@ class NIPAphase(object):
 
         return
 
-    def crossvalpcr(self, var, phase, n_comp, xval = True, debug = False):
+    def crossvalpcr(self, M, var, phase, n_comp, xval = True, debug = False):
         #Must set phase with bootcorr, and then use crossvalpcr, as it just uses the corr_grid attribute
         import numpy as np
         from numpy import array
@@ -310,19 +310,20 @@ class NIPAphase(object):
             self.correlation = r
             self.hindcast = yhat
             # create boolean vector representing the phase in the dataset (0 neg 1 pos)
-            label_n = [1 for i in range(len(pc_1))]
-            label_p = [2 for i in range(len(pc_1))]
-            if phase == 'neg':
-                label = np.array(label_n)
-            elif phase == 'pos':
-                label = np.array(label_p)
-            ###
-            if n_comp == 1:
-                data = pd.DataFrame([pc_1,predictand,label]).T
-                data.columns = ['pc1','target','phase_label']
-                # coverting label column from float to integer (we want 0 and 1 not 0.0 and 1.0)
-                data['phase_label'] = pd.to_numeric(data['phase_label'], downcast='integer')
-                self.dataset = data
+            if M == 2:
+                label_n = [1 for i in range(len(pc_1))]
+                label_p = [2 for i in range(len(pc_1))]
+                if phase == 'neg':
+                    label = np.array(label_n)
+                elif phase == 'pos':
+                    label = np.array(label_p)
+                ###
+                if n_comp == 1:
+                    data = pd.DataFrame([pc_1,predictand,label]).T
+                    data.columns = ['pc1','target','phase_label']
+                    # coverting label column from float to integer (we want 0 and 1 not 0.0 and 1.0)
+                    data['phase_label'] = pd.to_numeric(data['phase_label'], downcast='integer')
+                    self.dataset = data
             return
 
         for i in idx:

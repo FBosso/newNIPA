@@ -160,7 +160,9 @@ def loadFiles(data_path, version = '3b', debug = False, anomalies = True, **kwar
                 break
         avg_items = []
         for file in files_tl:
+            # take each of the considered files and append the monthly mean to the avg_item list
             avg_items.append(xr.open_dataset(f'{data_path}/{file}', engine='netcdf4').mean(dim='time'))
+        # concatenate the monthly means on the time dimension
         lista.append(xr.concat(avg_items, dim='time').mean(dim='time'))
     tot = xr.concat(lista, dim='time')
     if var == 'SST':

@@ -14,11 +14,9 @@ import math
 import xarray as xr
 
 
-
-
 #### USER INPUT ####
 local_datas = ['tp_netherlands_cumul', 't2m_netherlands']
-aggrs = [3,2,3]
+aggrs = [1,2,3]
 months_complete = [i+1 for i in range(12)]
 indices = ['SCA','EA','ENSO-mei','NAO']
 global_datas = ['SST','MSLP','Z500']
@@ -92,7 +90,7 @@ for local_data_i, local_data in enumerate(local_datas):
                     # if month = [12] we will obtain the PC1 to build the NN for the forecast of
                     # December precipitation (with november data)
                     startyr = 1980      # beginning of the time period to analyze
-                    n_yrs = 40          # number of years to analyze
+                    n_yrs = 42          # number of years to analyze
                     
                     #defining the name of the output PNG file
                     filename = f'{index_label}_{var}-{n_obs}_{loc_var}-{month}'
@@ -162,13 +160,18 @@ for local_data_i, local_data in enumerate(local_datas):
                     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
                     #this section will be executed only if we consider the climate signal as "single phased" (M=1)
                     if M == 1:
+                        save_condition = []
                         phase = 'allyears'
                         model = NIPAphase(climdata, sst, index, phaseind[phase])
                         model.phase = phase
                         model.years = years[phaseind[phase]]
                         model.bootcorr(corrconf = 0.95)
+                        save_condition.append(model.valid)
                         model.gridCheck()
-                        model.crossvalpcr(xval = crv_flag)
+                        model.crossvalpcr(M, global_data, phase, n_comp, xval = crv_flag)
+                        if not crv_flag:
+                            if hasattr(model,'pc1'):
+                                pc1['pc1'].append(model.pc1)
                         timeseries['years'] = model.years
                         timeseries['data'] = model.clim_data
                         timeseries['hindcast'] = model.hindcast
@@ -225,7 +228,7 @@ for local_data_i, local_data in enumerate(local_datas):
                             model.gridCheck()
                             
                             # this fuction is the one that actually computes the PC1 and the pearson coefficient
-                            model.crossvalpcr(global_data, phase, n_comp, xval = crv_flag)
+                            model.crossvalpcr(M, global_data, phase, n_comp, xval = crv_flag)
                             
                             ##### Assignment of pearson value to the right element of the matrix "pearson_table"
                             if (phase == 'neg') and (save_condition[0] == True):
@@ -276,9 +279,14 @@ for local_data_i, local_data in enumerate(local_datas):
                                 plt.close(fig)
                               
                     if map_flag:
-                        if (save_condition[0] == False) or (save_condition[1] == False):
-                            import os
-                            os.remove(fp+'.png')
+                        if M == 2:
+                            if (save_condition[0] == False) or (save_condition[1] == False):
+                                import os
+                                os.remove(fp+'.png')
+                        elif M == 1:
+                            if (save_condition[0] == False):
+                                import os
+                                os.remove(fp+'.png')
                                 
                     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++          
                     
@@ -324,36 +332,66 @@ for local_data_i, local_data in enumerate(local_datas):
                     # once the exceptions have been handled (only first phase, only second phase 
                     # or both phses present) the data are saved in a pandas dataframe
                     df = pd.DataFrame(timeseries)
-                    
-                    if (save_condition[0] == True) and (save_condition[1] == True):
-                    
-                        # creation of a direcotry
-                        if os.path.exists(f'./output/{index_label}_{var}-{n_obs}_{loc_var}') == False:
-                            os.mkdir(f'./output/{index_label}_{var}-{n_obs}_{loc_var}')
+                    if M == 2:
+                        if (save_condition[0] == True) and (save_condition[1] == True):
                         
-                        # the dataframe is saved in a csv file
-                        ts_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_timeseries.csv'
-                        df.to_csv(ts_file)
-                    
-                    # if "crv_flag" was set to False a csv file containing the first principal 
-                    # components of the SSTs is also saved (NOT CLEAR WHY IT IS NOT CREATED IF 
-                    # "crv_flag" is set to false)
-                    #if (not crv_flag) and (not model.flags['noSST']) :
-                    if (not crv_flag) and ((save_condition[0] == True) and (save_condition[1] == True)) :
-                        # save PC
-                        pc1['pc1'] = np.concatenate(pc1['pc1'])
-                        pc_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_pc1SST.csv'
-                        dataset_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_dataset.csv'
-                        dataset = pd.concat(dataset)
-                        if n_comp == 1:
-                            df1 = pd.DataFrame(pc1)
-                        elif n_comp == 2:
-                            pc = {'pc1':np.concatenate((pc1['pc1'].T[:,0],pc1['pc1'].T[:,2])),
-                                  'pc2':np.concatenate((pc1['pc1'].T[:,1],pc1['pc1'].T[:,3]))}
-                            df1 = pd.DataFrame(pc)
+                            # creation of a direcotry
+                            if os.path.exists(f'./output/{index_label}_{var}-{n_obs}_{loc_var}') == False:
+                                os.mkdir(f'./output/{index_label}_{var}-{n_obs}_{loc_var}')
                             
-                        df1.to_csv(pc_file)
-                        dataset.to_csv(dataset_file)
+                            # the dataframe is saved in a csv file
+                            ts_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_timeseries.csv'
+                            df.to_csv(ts_file)
+                        
+                        # if "crv_flag" was set to False a csv file containing the first principal 
+                        # components of the SSTs is also saved (NOT CLEAR WHY IT IS NOT CREATED IF 
+                        # "crv_flag" is set to false)
+                        #if (not crv_flag) and (not model.flags['noSST']) :
+                        if (not crv_flag) and ((save_condition[0] == True) and (save_condition[1] == True)) :
+                            # save PC
+                            pc1['pc1'] = np.concatenate(pc1['pc1'])
+                            pc_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_pc1SST.csv'
+                            dataset_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_dataset.csv'
+                            dataset = pd.concat(dataset)
+                            if n_comp == 1:
+                                df1 = pd.DataFrame(pc1)
+                            elif n_comp == 2:
+                                pc = {'pc1':np.concatenate((pc1['pc1'].T[:,0],pc1['pc1'].T[:,2])),
+                                      'pc2':np.concatenate((pc1['pc1'].T[:,1],pc1['pc1'].T[:,3]))}
+                                df1 = pd.DataFrame(pc)
+                                
+                            df1.to_csv(pc_file)
+                            dataset.to_csv(dataset_file)
+                            
+                    if M == 1:
+                        if (save_condition[0] == True):
+                            # creation of a direcotry
+                            if os.path.exists(f'./output/{index_label}_{var}-{n_obs}_{loc_var}') == False:
+                                os.mkdir(f'./output/{index_label}_{var}-{n_obs}_{loc_var}')
+                            
+                            # the dataframe is saved in a csv file
+                            ts_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_timeseries.csv'
+                            df.to_csv(ts_file)
+                        
+                        # if "crv_flag" was set to False a csv file containing the first principal 
+                        # components of the SSTs is also saved (NOT CLEAR WHY IT IS NOT CREATED IF 
+                        # "crv_flag" is set to false)
+                        #if (not crv_flag) and (not model.flags['noSST']) :
+                        if (not crv_flag) and (save_condition[0] == True):
+                            # save PC
+                            pc1['pc1'] = np.concatenate(pc1['pc1'])
+                            pc_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_pc1SST.csv'
+                            dataset_file = f'./output/{index_label}_{var}-{n_obs}_{loc_var}/{filename}_dataset.csv'
+                            
+                            if n_comp == 1:
+                                df1 = pd.DataFrame(pc1)
+                            elif n_comp == 2:
+                                pc = {'pc1':np.concatenate((pc1['pc1'].T[:,0],pc1['pc1'].T[:,2])),
+                                      'pc2':np.concatenate((pc1['pc1'].T[:,1],pc1['pc1'].T[:,3]))}
+                                df1 = pd.DataFrame(pc)
+                                
+                            df1.to_csv(pc_file)
+                            
                         
                     ### SAVING PEARSON TABLE ###
                     
@@ -375,7 +413,9 @@ for local_data_i, local_data in enumerate(local_datas):
                         df_mon.columns = global_datas
                         df_mon.index = long
                         
-                        df_mon.to_excel(f'./pearson_tables/{local_data}-{aggr}-{month}.xlsx')
+                        months_dict = {1:'01',2:'02',3:'03',4:'04',5:'05',6:'06',7:'07',8:'08',9:'09',10:'10',11:'11',12:'12'}
+                        
+                        df_mon.to_excel(f'./pearson_tables/{local_data}-{aggr}-{months_dict[month]}.xlsx')
                     
                     ############################
                     
