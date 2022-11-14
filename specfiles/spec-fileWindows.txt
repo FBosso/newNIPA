@@ -161,6 +161,7 @@ https://repo.anaconda.com/pkgs/main/noarch/wheel-0.37.1-pyhd3eb1b0_0.conda
 https://repo.anaconda.com/pkgs/main/win-64/win_inet_pton-1.1.0-py38haa95532_0.conda
 https://repo.anaconda.com/pkgs/main/win-64/wincertstore-0.2-py38haa95532_2.conda
 https://repo.anaconda.com/pkgs/main/win-64/wrapt-1.14.1-py38h2bbff1b_0.conda
+https://conda.anaconda.org/conda-forge/noarch/xlsxwriter-3.0.3-pyhd8ed1ab_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/noarch/yapf-0.31.0-pyhd3eb1b0_0.conda
 https://repo.anaconda.com/pkgs/main/win-64/zipp-3.8.0-py38haa95532_0.conda
 https://conda.anaconda.org/conda-forge/noarch/astunparse-1.6.3-pyhd8ed1ab_0.tar.bz2
