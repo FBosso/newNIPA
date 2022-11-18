@@ -71,15 +71,30 @@ class NIPAphase(object):
             self.cat = cat_dat
         return
 
-    def bootcorr(    self, ntim = 1000, corrconf = 0.95, bootconf = 0.80,
+    def bootcorr(    self, var, ntim = 1000, corrconf = 0.95, bootconf = 0.80,
                     debug = False, quick = True    ):
         from numpy import meshgrid, zeros, ma, isnan, linspace
         from utils import vcorr, sig_test
 
         corrlevel = 1 - corrconf
-
+        
         fieldData = self.sst.data
+        
+        if var == 'Z500':
+            #finding geopotential height from geopotential by dividing for 
+            #gravity acceleration --> (m^2 / s^2) / (m / s^2)
+            fieldData = fieldData/9.80665
+        elif var == 'MSLP':
+            #converting MSLP from Pa to hPa (because of coherence with 
+            #geopotential that is in hPa)
+            fieldData = fieldData/100
+        #subtract mean pixel by pixel to find the anomalies
+        for i in range(fieldData.shape[1]):
+            for j in range(fieldData.shape[2]):
+                fieldData[:,i,j] = fieldData[:,i,j] - fieldData[:,i,j].mean()
+        
         clim_data = self.clim_data
+        
 
         corr_grid = vcorr(X = fieldData, y = clim_data)
 

@@ -15,7 +15,8 @@ import xarray as xr
 
 
 #### USER INPUT ####
-local_datas = ['tp_netherlands_cumul', 't2m_netherlands']
+#local_datas = ['tp_netherlands_cumul', 't2m_netherlands']
+local_datas = ['tp_netherlands_cumul']
 aggrs = [1,2,3]
 months_complete = [i+1 for i in range(12)]
 indices = ['SCA','EA','ENSO-mei','NAO']
@@ -165,7 +166,7 @@ for local_data_i, local_data in enumerate(local_datas):
                         model = NIPAphase(climdata, sst, index, phaseind[phase])
                         model.phase = phase
                         model.years = years[phaseind[phase]]
-                        model.bootcorr(corrconf = 0.95)
+                        model.bootcorr(var, corrconf = 0.95)
                         save_condition.append(model.valid)
                         model.gridCheck()
                         model.crossvalpcr(M, global_data, phase, n_comp, xval = crv_flag)
@@ -217,7 +218,7 @@ for local_data_i, local_data in enumerate(local_datas):
                             #here the minimum correlation values between preseasonal SST and 
                             #precipitation is set (if the correlation is lower than 0.95 the 
                             #SST values of that location are not considered)
-                            model.bootcorr(corrconf = 0.95)
+                            model.bootcorr(var, corrconf = 0.95)
                             save_condition.append(model.valid)
                             
                             #given that "gridCheck()" is a function inside the "NIPAphase" class 
@@ -253,6 +254,7 @@ for local_data_i, local_data in enumerate(local_datas):
                             if not crv_flag:
                                 if hasattr(model,'pc1'):
                                     pc1['pc1'].append(model.pc1)
+                                    model.dataset['year_glvar'] = model.years
                                     dataset.append(model.dataset)
                                     
                             # Select the maximum absolute value of correlation
