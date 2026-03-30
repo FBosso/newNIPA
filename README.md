@@ -158,3 +158,7 @@ Core dependencies include:
 - scipy, scikit-learn: Statistical analysis
 
 See `specfiles/` for complete dependency lists.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
