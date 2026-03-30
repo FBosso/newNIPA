@@ -21,3 +21,9 @@
 .DS_Store?
 ._*
 .vscode
+
+# Python #
+##########
+__pycache__/
+*.pyc
+*.pyo
