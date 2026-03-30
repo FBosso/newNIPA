@@ -27,3 +27,15 @@
 __pycache__/
 *.pyc
 *.pyo
+
+
+# Data #
+########
+maps/*
+!maps/.gitkeep
+
+output/*
+!output/.gitkeep
+
+pearson_tables/*
+!pearson_tables/.gitkeep
